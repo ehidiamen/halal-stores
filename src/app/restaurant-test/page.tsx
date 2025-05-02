@@ -37,6 +37,7 @@ export default function RestaurantTestPage() {
       const data = await fetchRestaurantById(id);
       setSelectedRestaurant(data);
       setStatus(`Successfully fetched restaurant: ${data.name}`);
+      console.log(`${data.latitude}`);
     } catch (error) {
       setStatus(`Error fetching restaurant: ${error instanceof Error ? error.message : String(error)}`);
     }
