@@ -4,8 +4,10 @@ const Navbar = () => (
     <div className="container mx-auto flex justify-between">
       <Link href="/">Home</Link>
       <div>
+        <Link href="/recommendations" className="mr-4">Recommendations</Link>
         <Link href="/restaurant-test" className="mr-4">Restaurants</Link>
         <Link href="/prayer-room-test">Prayer Rooms</Link>
+        
       </div>
     </div>
   </nav>

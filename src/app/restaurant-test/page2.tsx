@@ -1,4 +1,4 @@
-// pages/restaurants.tsx
+
 "use client";
 
 import { useState } from 'react';
@@ -24,11 +24,21 @@ export default function RestaurantTestPage() {
     rating: 0,
     cuisineType: '',
     verified: false,
-    latitude: 0,
-    longitude: 0,
     createdAt: ''
   });
   const [status, setStatus] = useState<string>('');
+
+  // Test fetch all restaurants
+  const testFetchAll = async () => {
+    try {
+      setStatus('Fetching all restaurants...');
+      const data = await fetchRestaurants();
+      setRestaurants(data);
+      setStatus(`Successfully fetched ${data.length} restaurants`);
+    } catch (error) {
+      setStatus(`Error fetching restaurants: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
 
   // Test fetch single restaurant
   const testFetchSingle = async (id: number) => {
@@ -42,24 +52,12 @@ export default function RestaurantTestPage() {
     }
   };
 
-  // Test create restaurant with location validation
+  // Test create restaurant
   const testCreate = async () => {
-    if (!newRestaurant.name || !newRestaurant.address) {
-      setStatus('Name and address are required');
-      return;
-    }
-
-    if (isNaN(newRestaurant.latitude) || isNaN(newRestaurant.longitude)) {
-      setStatus('Valid latitude and longitude are required');
-      return;
-    }
-
     try {
       setStatus('Creating new restaurant...');
       const created = await createRestaurant({
-        ...newRestaurant,
-        latitude: Number(newRestaurant.latitude),
-        longitude: Number(newRestaurant.longitude)
+        ...newRestaurant
       });
       setStatus(`Successfully created restaurant with ID ${created.restaurantId}`);
       setNewRestaurant({
@@ -70,24 +68,11 @@ export default function RestaurantTestPage() {
         rating: 0,
         cuisineType: '',
         verified: false,
-        latitude: 0,
-        longitude: 0,
         createdAt: ''
       });
-      testFetchAll();
+      testFetchAll(); // Refresh the list
     } catch (error) {
       setStatus(`Error creating restaurant: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  };
-  // Test fetch all restaurants
-  const testFetchAll = async () => {
-    try {
-      setStatus('Fetching all restaurants...');
-      const data = await fetchRestaurants();
-      setRestaurants(data);
-      setStatus(`Successfully fetched ${data.length} restaurants`);
-    } catch (error) {
-      setStatus(`Error fetching restaurants: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
@@ -122,21 +107,20 @@ export default function RestaurantTestPage() {
     }
   };
 
-
-  // Add these input fields to the create form section
   return (
     <div>
     <Navbar />
-   <div className="p-4 max-w-4xl mx-auto">    
-    <h1 className="text-2xl font-bold mb-4">Restaurant Service</h1>
+    <div className="p-4 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Restaurant Service</h1>
       
-    <div className="mb-6 p-4 border rounded">
-      <h2 className="text-xl font-semibold mb-2">Current Status</h2>
-      <div className="p-2 bg-gray-100 rounded">
-        {status || 'No operations performed yet'}
+      <div className="mb-6 p-4 border rounded">
+        <h2 className="text-xl font-semibold mb-2">Current Status</h2>
+        <div className="p-2 bg-gray-100 rounded">
+          {status || 'No operations performed yet'}
+        </div>
       </div>
-    </div> 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Fetch Operations */}
         <div className="p-4 border rounded">
           <h2 className="text-xl font-semibold mb-2">Fetch Operations</h2>
@@ -165,8 +149,8 @@ export default function RestaurantTestPage() {
           )}
         </div>
 
-      {/* Selected Restaurant */}
-      <div className="p-4 border rounded">
+        {/* Selected Restaurant */}
+        <div className="p-4 border rounded">
           <h2 className="text-xl font-semibold mb-2">Selected Restaurant</h2>
           {selectedRestaurant ? (
             <div>
@@ -195,11 +179,12 @@ export default function RestaurantTestPage() {
             <p>No restaurant selected</p>
           )}
         </div>
-      <div className="p-4 border rounded col-span-full">
-        <h2 className="text-xl font-semibold mb-2">Create New Restaurant</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* ... existing fields ... */}
-          <div>
+
+        {/* Create Restaurant */}
+        <div className="p-4 border rounded col-span-full">
+          <h2 className="text-xl font-semibold mb-2">Create New Restaurant</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
               <label className="block mb-1">Name</label>
               <input
                 type="text"
@@ -217,7 +202,7 @@ export default function RestaurantTestPage() {
                 className="w-full p-2 border rounded"
               />
             </div>
-          <div>
+            <div>
               <label className="block mb-1">City</label>
               <input
                 type="text"
@@ -235,7 +220,7 @@ export default function RestaurantTestPage() {
                 className="w-full p-2 border rounded"
               />
             </div>
-          <div>
+            <div>
               <label className="block mb-1">Rating (1-5)</label>
               <input
                 type="number"
@@ -255,7 +240,7 @@ export default function RestaurantTestPage() {
                 className="w-full p-2 border rounded"
               />
             </div>
-          <div className="flex items-center">
+            <div className="flex items-center">
               <input
                 type="checkbox"
                 checked={newRestaurant.verified}
@@ -264,41 +249,16 @@ export default function RestaurantTestPage() {
               />
               <label>Verified</label>
             </div>
-          <div>
-            <label className="block mb-1">Latitude</label>
-            <input
-              type="number"
-              value={newRestaurant.latitude}
-              onChange={(e) => setNewRestaurant({...newRestaurant, latitude: parseFloat(e.target.value)})}
-              className="w-full p-2 border rounded"
-              step="any"
-              min="-90"
-              max="90"
-            />
           </div>
-          <div>
-            <label className="block mb-1">Longitude</label>
-            <input
-              type="number"
-              value={newRestaurant.longitude}
-              onChange={(e) => setNewRestaurant({...newRestaurant, longitude: parseFloat(e.target.value)})}
-              className="w-full p-2 border rounded"
-              step="any"
-              min="-180"
-              max="180"
-            />
-          </div>
+          <button 
+            onClick={testCreate}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            disabled={!newRestaurant.name || !newRestaurant.address}
+          >
+            Create Restaurant
+          </button>
         </div>
-        <button 
-          onClick={testCreate}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          disabled={!newRestaurant.name || !newRestaurant.address || 
-                   isNaN(newRestaurant.latitude) || isNaN(newRestaurant.longitude)}
-        >
-          Create Restaurant
-        </button>
       </div>
-    </div>
     </div>
     </div>
   );
